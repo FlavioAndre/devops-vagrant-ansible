@@ -1,0 +1,8 @@
+---
+- hosts: javaIde
+  roles:
+    - javaIde
+
+- hosts: postgres
+  roles:
+    - postgres

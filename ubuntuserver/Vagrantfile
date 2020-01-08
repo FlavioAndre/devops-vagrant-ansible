@@ -1,0 +1,80 @@
+Vagrant.configure("2") do |config|
+
+ 
+  config.vm.define "java-vm" do |java|
+   # configure the basebox
+    java.vm.box = "fasmat/ubuntu1804-desktop"  
+    java.vm.network "public_network", ip: "192.168.1.30"
+
+    java.vm.provider "virtualbox" do |vb|
+      vb.memory = 8192
+      vb.cpus = 4
+      vb.name = "Java com Eclipse"
+      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      vb.gui = true
+    end
+    java.vm.hostname = "java-com-eclipse.local"
+    java.vm.synced_folder "./configs", "/configs"
+    java.vm.synced_folder "/Users/data52523/Documents/Pessoal/Datainfo/TJ/repositorio", "/repositorio"
+    java.vm.synced_folder ".", "vagrant", disabled: true
+
+    java.vm.provision "shell",
+      inline: "cat /configs/id_java_env.pub >> .ssh/authorized_keys && \
+             cp /configs/stsLauncher.desktop /usr/share/applications"
+
+
+    java.vm.provision "shell",
+      inline: "apt-get update &&  \
+               apt-get install -y software-properties-common && \
+               apt-get install -y net-tools && \
+               setxkbmap -model abnt2 -layout br -variant abnt2"
+
+
+  end
+
+  config.vm.define "ansible" do |ansible|
+    ansible.vm.box = "ubuntu/bionic64"
+    ansible.vm.network "public_network", ip: "192.168.1.31"
+
+   
+    ansible.vm.provision "shell",
+      inline: "cp /vagrant/id_java_env  /home/vagrant && \
+              chmod 600 /home/vagrant/id_java_env && \
+              chown vagrant:vagrant /home/vagrant/id_java_env"
+
+    ansible.vm.provision "shell",
+      inline: "apt-get update &&  \
+               apt-get install -y software-properties-common && \
+               apt-add-repository --yes --update ppa:ansible/ansible && \
+               apt-get install -y ansible "
+
+    ansible.vm.provision "shell",
+        inline: " ansible-playbook /vagrant/ansible/playbook.yml -i /vagrant/ansible/hosts"
+
+    ansible.vm.provider "virtualbox" do |vb|
+      vb.memory = 248
+      vb.cpus = 1
+      vb.name = "ansible_ubuntu"
+    end
+  end
+
+  config.vm.define "postgres" do |pg|
+    pg.vm.box = "ubuntu/bionic64"
+    pg.vm.network "public_network", ip: "192.168.1.32"
+    pg.vm.network "forwarded_port", guest: 5432, host: 5433
+
+    pg.vm.provider "virtualbox" do |vb|
+      vb.memory = 1024
+      vb.cpus = 1
+      vb.name = "postgres_ubuntu"
+      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+    end
+
+    pg.vm.synced_folder "./configs", "/configs"
+    pg.vm.synced_folder ".", "vagrant", disabled: true
+
+    pg.vm.provision "shell",
+      inline: "cat /configs/id_java_env.pub >> .ssh/authorized_keys"
+
+  end
+end

@@ -1,0 +1,100 @@
+---
+- hosts: javaIde
+  tasks:
+    - name: 'Instala o Java JDK'
+      apt:
+        update_cache: yes
+        name: openjdk-8-jdk
+        state: latest
+      become: yes
+
+    - name: 'Instala o GIT'
+      apt:
+        update_cache: yes
+        name: git
+        state: latest
+      become: yes
+
+
+    - name: 'Instala o Visual Studio Code'
+      snap:
+        name: code
+        state: present
+        classic: yes
+      become: yes
+
+    - name: 'Baixa Spring tools STS'
+      get_url:
+        url: 'https://download.springsource.com/release/STS4/4.5.0.RELEASE/dist/e4.14/spring-tool-suite-4-4.5.0.RELEASE-e4.14.0-linux.gtk.x86_64.tar.gz'
+        dest: '/home/vagrant/Downloads/eclipse.tar.gz'
+        owner: vagrant
+        group: vagrant
+        mode: 0777
+      become: yes
+
+    - name: 'Cria diretório para o eclipse'
+      file: 
+        path: /home/vagrant/eclipse
+        owner: vagrant
+        group: vagrant
+        mode: 0777 
+        state: directory
+
+    - name: 'Descompacta o Spring tools STS'
+      unarchive:
+        src: '/home/vagrant/Downloads/eclipse.tar.gz'
+        dest: /home/vagrant/eclipse
+        owner: vagrant
+        group: vagrant
+        mode: 0777 
+        remote_src: yes
+      become: yes
+
+    - name: 'Cria link simbolico para o Spring tools STS'
+      file: 
+        src: /home/vagrant/eclipse/sts-4.5.0.RELEASE
+        dest: /usr/local/bin/sts
+        owner: vagrant
+        group: vagrant
+        state: link
+
+- hosts: postgres
+  handlers:
+    - name: restart postgres
+      service:
+        name: postgres
+        state: restarted
+      become: yes
+  tasks:        
+    - name: 'Instala banco de dados Postgres'
+      apt:
+          update_cache: yes
+          name: "{{ item }}"
+          state: latest
+      become: yes
+      with_items:
+        - postgresql-10
+        - postgresql-contrib
+        - python3
+        - python3-psycopg2
+
+    - name: 'Cria o user do Postgres'
+      postgresql_user:
+        name: postgres
+        password: postgres
+        encrypted: true
+        state: present
+      become_user: postgres
+
+
+    - name: 'Cria o banco do Postgres'
+      postgresql_db:
+        name: teste
+        template: template0
+        encoding: UTF-8
+        login_user: postgres
+        state: present
+      become_user: postgres
+
+
+        

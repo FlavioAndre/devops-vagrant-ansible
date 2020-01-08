@@ -1,0 +1,57 @@
+---
+- name: "Instala o Java JDK"
+  apt:
+    update_cache: yes
+    name: openjdk-8-jdk
+    state: latest
+  become: yes
+
+- name: "Instala o GIT"
+  apt:
+    update_cache: yes
+    name: git
+    state: latest
+  become: yes
+
+- name: "Instala o Visual Studio Code"
+  snap:
+    name: code
+    state: present
+    classic: yes
+  become: yes
+
+- name: "Baixa Spring tools STS"
+  get_url:
+     url: "https://download.springsource.com/release/STS4/4.5.0.RELEASE/dist/e4.14/spring-tool-suite-4-4.5.0.RELEASE-e4.14.0-linux.gtk.x86_64.tar.gz"
+     dest: "/home/vagrant/Downloads/eclipse.tar.gz"
+     owner: vagrant
+     group: vagrant
+     mode: 0777
+  become: yes
+
+- name: "Cria diretório para o eclipse"
+  file:
+    path: /home/vagrant/eclipse
+    owner: vagrant
+    group: vagrant
+    mode: 0777
+    state: directory
+
+- name: "Descompacta o Spring tools STS"
+  unarchive:
+    src: "/home/vagrant/Downloads/eclipse.tar.gz"
+    dest: /home/vagrant/eclipse
+    owner: vagrant
+    group: vagrant
+    mode: 0777
+    remote_src: yes
+  become: yes
+
+- name: "Cria link simbolico para o Spring tools STS"
+  file:
+    src: /home/vagrant/eclipse/sts-4.5.0.RELEASE
+    dest: /usr/local/bin/sts
+    owner: vagrant
+    group: vagrant
+    state: link
+  become: yes

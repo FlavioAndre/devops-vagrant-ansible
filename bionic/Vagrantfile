@@ -1,0 +1,65 @@
+$script_postgres = <<-SCRIPT
+apt-get update && \
+apt-get install -y postgresql-10
+SCRIPT
+
+$script_configure_postgres = <<-SCRIPT
+service postgresql restart && \
+sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres'; " && \
+sudo -u postgres createdb -E UTF8 teste
+SCRIPT
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/bionic64"
+
+  config.vm.define "mysqldb" do |postgres|
+    postgres.vm.network "forwarded_port", guest: 80, host: 8089
+    postgres.vm.network "forwarded_port", guest: 5432, host: 5500
+    postgres.vm.network "public_network", ip: "192.168.6.58"
+    
+    postgres.vm.provision "shell",
+      inline: "cat /configs/id_bionic.pub >> .ssh/authorized_keys"
+
+      postgres.vm.provision "shell",
+      inline: "apt-get update && apt-get install -y nginx"    
+
+      postgres.vm.provision "shell", inline: $script_postgres
+
+      postgres.vm.provision "shell",
+      inline: "cat /configs/postgresql.conf > /etc/postgresql/10/main/postgresql.conf"
+
+      postgres.vm.provision "shell",
+      inline: "echo host  all  all  10.0.2.0/24  md5 >> /etc/postgresql/10/main/pg_hba.conf"
+
+      postgres.vm.provision "shell", inline: $script_configure_postgres
+
+      postgres.vm.synced_folder "./configs", "/configs"
+      postgres.vm.synced_folder ".", "vagrant", disabled: true
+  end
+
+  config.vm.define "ansible" do |ansible|
+    ansible.vm.network "public_network", ip: "192.168.1.26"
+
+   
+    ansible.vm.provision "shell",
+      inline: "cp /vagrant/id_bionic  /home/vagrant && \
+              chmod 600 /home/vagrant/id_bionic && \
+              chown vagrant:vagrant /home/vagrant/id_bionic"
+
+    ansible.vm.provision "shell",
+      inline: "apt-get update &&  \
+               apt-get install -y software-properties-common && \
+               apt-add-repository --yes --update ppa:ansible/ansible && \
+               apt-get install -y ansible "
+
+    #ansible.vm.provision "shell",
+    #    inline: "ansible-playbook -i /vagrant/configs/ansible/hosts \
+    #              /vagrant/configs/ansible/playbook.yml"
+
+    ansible.vm.provider "virtualbox" do |vb|
+      vb.memory = 248
+      vb.cpus = 1
+      vb.name = "ansible_ubuntu"
+    end
+  end
+end

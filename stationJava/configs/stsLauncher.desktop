@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Spring Tool Suite
+Comment=Spring Tool Suite 3.9.8
+Exec=/home/vagrant/eclipse/sts-4.5.0.RELEASE/SpringToolSuite4
+Icon=/home/vagrant/eclipse/sts-4.5.0.RELEASE/icon.xpm
+StartupNotify=true
+Terminal=false
+Type=Application
+Categories=Development;IDE;Java;

@@ -1,0 +1,19 @@
+
+[javaIde]
+192.168.6.60
+
+[javaIde:vars]
+ansible_user=vagrant
+ansible_remote_user=vagrant
+ansible_ssh_private_key_file=/home/vagrant/id_java_env
+ansible_ssh-commom_args='-o StrictHostKeyChecking=accept-new'
+
+
+[postgres]
+192.168.6.62 
+[postgres:vars]
+ansible_user=vagrant
+ansible_ssh_private_key_file=/home/vagrant/id_java_env 
+ansible_python_interpreter=/usr/bin/python3
+ansible_ssh-commom_args='-o StrictHostKeyChecking=no'
+ansible_ssh-extra-args='-o UpdateHostKeys=yes -o StrictHostKeyChecking=accept-new' 
