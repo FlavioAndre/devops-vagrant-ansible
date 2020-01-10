@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fontFamilies>
+ 
+    <fontFamily name="segoeuil">
+        <normal><![CDATA[fonts/segoeuil.ttf]]></normal>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <pdfEmbedded><![CDATA[true]]></pdfEmbedded>
+    </fontFamily>
+    
+    
+    <fontFamily name="segoeuilBold">
+        <normal><![CDATA[fonts/segoe-ui-bold.ttf]]></normal>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <pdfEmbedded><![CDATA[true]]></pdfEmbedded>
+    </fontFamily>
+    
+      <fontFamily name="calibri">
+        <normal><![CDATA[fonts/calibri-7.ttf]]></normal>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <pdfEmbedded><![CDATA[true]]></pdfEmbedded>
+    </fontFamily>
+    
+      <fontFamily name="calibri-bold">
+        <normal><![CDATA[fonts/calibri-bold-2.ttf]]></normal>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <pdfEmbedded><![CDATA[true]]></pdfEmbedded>
+    </fontFamily>
+    
+    <fontFamily name="arialmt">
+        <normal><![CDATA[fonts/ARIALMT.ttf]]></normal>
+        <pdfEncoding>Identity-H</pdfEncoding>
+        <pdfEmbedded><![CDATA[true]]></pdfEmbedded>
+    </fontFamily>
+ 
+ 
+</fontFamilies>

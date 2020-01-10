@@ -1,6 +1,7 @@
 
 [javaIde]
 192.168.6.60
+192.168.6.65
 
 [javaIde:vars]
 ansible_user=vagrant

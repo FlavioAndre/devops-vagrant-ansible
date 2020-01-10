@@ -30,6 +30,72 @@ Vagrant.configure("2") do |config|
 
   end
 
+  config.vm.define "java-mint" do |java|
+    # configure the basebox
+    java.vm.box = "epipho/mint-19.3"
+   
+     java.vm.network "public_network", ip: "192.168.6.65", bridge: "Intel(R) Ethernet Connection (2) I219-LM"
+     java.vm.network "forwarded_port", guest: 8080, host: 8081
+
+     java.vm.provision "shell",
+       inline: "apt-get update &&  \
+                apt-get install -y software-properties-common && \
+                apt-get install -y net-tools && \
+                apt-get install snapd"
+ 
+     java.vm.provision "shell",
+     inline: "cat /configs/id_java_env.pub >> .ssh/authorized_keys && \
+              cp /configs/stsLauncher.desktop /usr/share/applications && \
+              mkdir -p /configs/fonts/truetype/msttcorefonts/ && \
+              cp -R /configs/fonts/ /usr/share/fonts/truetype/msttcorefonts && \
+              fc-cache -f /usr/share/fonts/truetype/msttcorefonts/"
+ 
+     java.vm.provider "virtualbox" do |vb|
+       vb.memory = 4096
+       vb.cpus = 4
+       vb.name = "java_mint"
+       vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+       vb.gui = true
+     end
+     java.vm.hostname = "java.mint.local"
+     java.vm.synced_folder "./configs", "/configs"
+     java.vm.synced_folder "/desenvolvimento/tjmt", "/repositorio"
+ 
+   end
+
+
+   config.vm.define "angular-mint" do |angular|
+    # configure the basebox
+    angular.vm.box = "epipho/mint-19.3"
+   
+    angular.vm.network "public_network", ip: "192.168.6.66", bridge: "Intel(R) Ethernet Connection (2) I219-LM"
+    angular.vm.network "forwarded_port", guest: 4200, host: 4200
+
+    angular.vm.provision "shell",
+       inline: "apt-get update &&  \
+                apt-get install -y software-properties-common && \
+                apt-get install -y net-tools && \
+                apt-get install snapd"
+ 
+    angular.vm.provision "shell",
+     inline: "cat /configs/id_java_env.pub >> .ssh/authorized_keys && \
+              cp /configs/stsLauncher.desktop /usr/share/applications"
+ 
+    angular.vm.provider "virtualbox" do |vb|
+       vb.memory = 4096
+       vb.cpus = 4
+       vb.name = "angular_mint"
+       vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+       vb.gui = true
+     end
+
+     angular.vm.hostname = "angular.mint.local"
+     angular.vm.synced_folder "./configs", "/configs"
+     angular.vm.synced_folder "/desenvolvimento/tjmt", "/repositorio"
+ 
+   end
+
+
   config.vm.define "ansible" do |ansible|
     ansible.vm.box = "ubuntu/bionic64"
     ansible.vm.network "public_network", ip: "192.168.6.61", bridge: "Intel(R) Ethernet Connection (2) I219-LM"
@@ -40,14 +106,20 @@ Vagrant.configure("2") do |config|
     ansible.vm.provision "shell",
       inline: "cp /vagrant/id_java_env  /home/vagrant && \
               chmod 600 /home/vagrant/id_java_env && \
-              chown vagrant:vagrant /home/vagrant/id_java_env"
+              chown vagrant:vagrant /home/vagrant/id_java_env && \
+              chown vagrant:vagrant /home"
 
     ansible.vm.provision "shell",
       inline: "apt-get update &&  \
                apt-get install -y software-properties-common && \
                apt-add-repository -y ppa:ansible/ansible && \
                apt-get update  && \
-               apt-get install -y ansible "
+               apt-get install -y ansible && \
+               apt-get remove openjdk* -y && \
+               apt-get remove --auto-remove openjdk* -y && \
+               apt-get purge openjdk* -y &&
+               apt-get purge --auto-remove openjdk* -y && \
+               setxkbmap -model abnt2 -layout br -variant abnt2"
 
     ansible.vm.provision "shell",
         inline: "ansible-playbook /vagrant/ansible/playbook.yml -i /vagrant/ansible/hosts  --ssh-extra-args='-o UpdateHostKeys=yes -o StrictHostKeyChecking=accept-new' 
