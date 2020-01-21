@@ -70,6 +70,7 @@ Vagrant.configure("2") do |config|
    
     angular.vm.network "public_network", ip: "192.168.6.66", bridge: "Intel(R) Ethernet Connection (2) I219-LM"
     angular.vm.network "forwarded_port", guest: 4200, host: 4200
+    angular.vm.network "forwarded_port", guest: 5000, host: 80
 
     angular.vm.provision "shell",
        inline: "apt-get update &&  \
@@ -79,22 +80,74 @@ Vagrant.configure("2") do |config|
  
     angular.vm.provision "shell",
      inline: "cat /configs/id_java_env.pub >> .ssh/authorized_keys && \
-              cp /configs/stsLauncher.desktop /usr/share/applications"
+              cp /configs/stsLauncher.desktop /usr/share/applications && \
+              cp /configs/insominia/insominia.lis /etc/apt/sources.list.d"
  
     angular.vm.provider "virtualbox" do |vb|
-       vb.memory = 4096
-       vb.cpus = 4
+       vb.memory = 6144
+       vb.cpus = 2
        vb.name = "angular_mint"
        vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+       vb.customize ["modifyvm", :id, "--cpuexecutioncap", "90"]
        vb.gui = true
      end
 
      angular.vm.hostname = "angular.mint.local"
      angular.vm.synced_folder "./configs", "/configs"
-     angular.vm.synced_folder "/desenvolvimento/tjmt", "/repositorio"
+     
  
    end
 
+   config.vm.define "angular7-mint" do |angular7|
+    # configure the basebox
+    angular7.vm.box = "epipho/mint-19.3"
+   
+    angular7.vm.network "public_network", ip: "192.168.6.67", bridge: "Intel(R) Ethernet Connection (2) I219-LM"
+    angular7.vm.network "forwarded_port", guest: 4200, host: 4200
+
+    angular7.vm.provision "shell",
+    inline: "cat /configs/id_java_env.pub >> .ssh/authorized_keys"
+
+    angular7.vm.provision "shell",
+       inline: "apt-get update &&  \
+                apt-get install build-essential -y && \
+                apt-get install -y software-properties-common && \
+                apt-get install -y net-tools && \
+                apt-get install snapd "
+    
+    angular7.vm.provision "shell",
+    inline: " echo insomina && \
+            wget --quiet -O - https://insomnia.rest/keys/debian-public.key.asc | apt-key add -"
+  
+    angular7.vm.provision "shell",
+    inline: "echo nvm && \
+              apt-get update && \
+              wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash"
+
+    angular7.vm.provision "shell",
+             inline: "echo set installNVM && \
+             mv /root/.nvm /home/vagrant/.nvm && \
+             export NVM_DIR='/home/vagrant/.nvm' && \
+             [ -s '$NVM_DIR/nvm.sh' ] && \. '$NVM_DIR/nvm.sh'
+             [ -s '$NVM_DIR/bash_completion' ] && \. '$NVM_DIR/bash_completion'
+             "
+              
+
+  
+ 
+    angular7.vm.provider "virtualbox" do |vb|
+       vb.memory = 6144
+       vb.cpus = 2
+       vb.name = "angular7_mint"
+       vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+       vb.customize ["modifyvm", :id, "--cpuexecutioncap", "90"]
+       vb.gui = true
+     end
+
+     angular7.vm.hostname = "angular7.mint.local"
+     angular7.vm.synced_folder "./configs", "/configs"     
+ 
+   end
 
   config.vm.define "ansible" do |ansible|
     ansible.vm.box = "ubuntu/bionic64"
